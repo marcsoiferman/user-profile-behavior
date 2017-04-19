@@ -1,0 +1,154 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../d2l-organization-hm-behavior/d2l-organization-hm-behavior.html">
+<link rel="import" href="../d2l-hm-constants-behavior/d2l-hm-constants-behavior.html">
+
+<script>
+	'use strict';
+
+	window.D2L = window.D2L || {};
+
+	window.D2L.UserProfileBehavior = {
+		properties: {
+			token: String,
+			userUrl: String,
+			_authorization: String,
+			_backgroundColor: String,
+			_backgroundUrl: String,
+			_enrollmentsUrl: String,
+			_headers: String,
+			_iconUrl: String,
+			_institutionUrl: String,
+			_name: String,
+			_organizationImageUrl: String,
+			_organizationsUrl: String,
+			_previousUserCall: Object,
+			_school: String,
+			_themeUrl: String
+		},
+		behaviors: [
+			window.D2L.Hypermedia.OrganizationHMBehavior,
+			window.D2L.Hypermedia.HMConstantsBehavior
+		],
+		_createIronAjaxRequest: function(request, url, headers, onResponse) {
+			request = request || document.createElement('iron-ajax');
+			request.url = url;
+			request.headers = headers;
+			this.listen(request, 'iron-ajax-response', onResponse);
+			return request;
+		},
+		generateUserRequest: function(userUrl, token) {
+			this._previousUserCall = this._previousUserCall || {};
+			this.userUrl = userUrl || this.userUrl;
+			this.token = token || this.toke;
+			if (
+				this.userUrl &&
+				this.token &&
+				this.userUrl !== this._previousUserCall.userUrl &&
+				this.token !== this._previousUserCall.token
+			) {
+				this._previousUserCall = { userUrl: this.userUrl, token: this.token };
+				this._authorization = 'Bearer ' + this.token;
+				this._headers = {
+					Authorization: this._authorization,
+					Accept: 'application/vnd.siren+json'
+				};
+				this._userRequest = this._createIronAjaxRequest(this._userRequest, this.userUrl, this._headers, '_onUserRequest')
+				this._userRequest.generateRequest();
+			}
+		},
+		_onUserRequest: function(response) {
+			if (response.detail.status === 200) {
+				var userResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				this._name = (userResponse.getSubEntityByRel(this.HypermediaRels.displayName) || { properties: {} }).properties.name;
+				var profile = userResponse.getSubEntityByRel(this.HypermediaRels.userProfile);
+				if (profile) {
+					var image = profile.getSubEntityByRel(this.HypermediaRels.profileImage);
+					if (image.class.indexOf('default-image') > -1) {
+						this._iconUrl = null;
+					} else {
+						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailRegular) || {}).href;
+					}
+				}
+				this._rootUrl = (userResponse.getLinkByRel(this.HypermediaRels.root) || {}).href;
+				if (this._rootUrl) {
+					this._rootReqeust = this._createIronAjaxRequest(this._rootReqeust, this._rootUrl, this._headers, '_onRootResponse');
+					this._rootReqeust.generateRequest();
+				}
+
+				this._enrollmentsUrl = (userResponse.getLinkByRel(this.HypermediaRels.myEnrollments) || {}).href;
+				if (this._enrollmentsUrl) {
+					this._enrollmentsUrl += '?pageSize=2&orgUnitTypeId=3&embedDepth=1';
+					this._enrollmentsRequest = this._createIronAjaxRequest(this._enrollmentsRequest, this._enrollmentsUrl, this._headers, '_onEnrollmentsResponse');
+					this._enrollmentsRequest.generateRequest();
+				}
+			}
+		},
+		_onRootResponse: function(response) {
+			if (response.detail.status === 200) {
+				var rootResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				this._institutionUrl = (rootResponse.getLinkByRel(this.HypermediaRels.organization) || {}).href;
+
+				if (this._institutionUrl) {
+					this._institutionRequest = this._createIronAjaxRequest(this._institutionRequest, this._institutionUrl, this._headers, '_onInstitutionResponse');
+					this._institutionRequest.generateRequest();
+				}
+			}
+		},
+		_onEnrollmentsResponse: function(response) {
+			if (response.detail.status === 200) {
+				var enrollmentsResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				if (enrollmentsResponse.entities.length === 1) {
+					this._organizationsUrl = enrollmentsResponse.getSubEntityByRel(this.HypermediaRels.userEnrollment)
+						.getLinkByRel(this.HypermediaRels.organization).href;
+
+					this._organizationsRequest = this._createIronAjaxRequest(this._organizationsRequest, this._organizationsUrl, this._headers, '_onOrganizationsResponse');
+					this._organizationsRequest.generateRequest();
+				}
+			}
+		},
+		_onInstitutionResponse: function(response) {
+			if (response.detail.status === 200) {
+				var institutionResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				this._themeUrl = (institutionResponse.getLinkByRel(this.HypermediaRels.theme) || {}).href;
+				if (institutionResponse.properties) {
+					this._school = institutionResponse.properties.name;
+				}
+
+				if (this._themeUrl) {
+					this._themeRequest = this._createIronAjaxRequest(this._themeRequest, this._themeUrl, this._headers, '_onThemeResponse');
+					this._themeRequest.generateRequest();
+				}
+			}
+		},
+		_onOrganizationsResponse: function(response) {
+			if (response.detail.status === 200) {
+				var organizationsResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				var imageLink = organizationsResponse.getSubEntityByClass( this.HypermediaClasses.courseImage.courseImage);
+
+				if (imageLink) {
+					this._organizationImageUrl = imageLink.href;
+					this._organizationImageRequest = this._createIronAjaxRequest(this._organizationImageRequest, this._organizationImageUrl, this._headers, '_onOrganizationImageResponse');
+					this._organizationImageRequest.generateRequest();
+				}
+			}
+		},
+		_onOrganizationImageResponse: function(response) {
+			if (response.detail.status === 200) {
+				var organizationImageResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				var backgroundImages = this._getImageLinks(organizationImageResponse, this.HypermediaClasses.courseImage.wide);
+				this._backgroundUrl = backgroundImages.highMin || backgroundImages.lowMax;
+			}
+		},
+
+		_onThemeResponse: function(response) {
+			if (response.detail.status === 200) {
+				var theme = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+
+				if (theme.properties) {
+					this._backgroundColor = theme.properties.BackgroundColor;
+				}
+			}
+		}
+	}
+</script>

@@ -1,0 +1,35 @@
+{
+  "name": "d2l-user-profile-behavior",
+  "description": "Brightspace User Profile Behavior",
+  "authors": [
+    "D2L Corporation"
+  ],
+  "license": "Apache-2.0",
+  "keywords": [
+    "d2l",
+  	"user",
+  	"profile",
+    "behavior"
+  ],
+  "homepage": "https://github.com/Brightspace/d2l-user-profile-behavior",
+  "main": "d2l-user-profile-behavior.html",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    ".editorconfig",
+    ".eslintrc",
+    ".gitignore",
+    ".travis.yml",
+    "package.json",
+    "test",
+    "tests",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "^1.7.0",
+    "d2l-hm-constants-behavior": "git://github.com/Brightspace/d2l-hm-constants-behavior.git#^1.0.0",
+    "d2l-organization-hm-behavior": "git://github.com/Brightspace/organization-hm-behavior.git#^1.0.0"
+  }
+}
