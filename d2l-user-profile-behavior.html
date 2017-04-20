@@ -11,21 +11,20 @@
 	window.D2L.UserProfileBehavior = {
 		properties: {
 			token: String,
-			userUrl: String,
-			_authorization: String,
-			_backgroundColor: String,
-			_backgroundUrl: String,
-			_enrollmentsUrl: String,
-			_headers: String,
-			_iconUrl: String,
-			_institutionUrl: String,
-			_name: String,
-			_organizationImageUrl: String,
-			_organizationsUrl: String,
-			_previousUserCall: Object,
-			_school: String,
-			_themeUrl: String
+			userUrl: String
 		},
+		_backgroundColor: String,
+		_backgroundUrl: String,
+		_enrollmentsUrl: String,
+		_headers: String,
+		_iconUrl: String,
+		_institutionUrl: String,
+		_name: String,
+		_organizationImageUrl: String,
+		_organizationsUrl: String,
+		_previousUserCall: Object,
+		_school: String,
+		_themeUrl: String,
 		behaviors: [
 			window.D2L.Hypermedia.OrganizationHMBehavior,
 			window.D2L.Hypermedia.HMConstantsBehavior
@@ -48,9 +47,8 @@
 				this.token !== this._previousUserCall.token
 			) {
 				this._previousUserCall = { userUrl: this.userUrl, token: this.token };
-				this._authorization = 'Bearer ' + this.token;
 				this._headers = {
-					Authorization: this._authorization,
+					Authorization: 'Bearer ' + this.token,
 					Accept: 'application/vnd.siren+json'
 				};
 				this._userRequest = this._createIronAjaxRequest(this._userRequest, this.userUrl, this._headers, '_onUserRequest')
