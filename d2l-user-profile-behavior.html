@@ -96,10 +96,11 @@
 		_onEnrollmentsResponse: function(response) {
 			if (response.detail.status === 200) {
 				var enrollmentsResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				if (enrollmentsResponse.entities.length === 1) {
-					this._organizationsUrl = enrollmentsResponse.getSubEntityByRel(this.HypermediaRels.userEnrollment)
-						.getLinkByRel(this.HypermediaRels.organization).href;
+				var enrollmentEntities = enrollmentsResponse.getSubEntitiesByRel(this.HypermediaRels.userEnrollment);
 
+				if (enrollmentEntities.length === 1) {
+					this._organizationsUrl = enrollmentEntities[0].getLinkByRel(this.HypermediaRels.organization).href;
+					
 					this._organizationsRequest = this._createIronAjaxRequest(this._organizationsRequest, this._organizationsUrl, this._headers, '_onOrganizationsResponse');
 					this._organizationsRequest.generateRequest();
 				}
