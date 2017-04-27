@@ -65,7 +65,7 @@
 					if (image.class.indexOf('default-image') > -1) {
 						this._iconUrl = null;
 					} else {
-						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailRegular) || {}).href;
+						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailAlternative) || {}).href;
 					}
 				}
 				this._rootUrl = (userResponse.getLinkByRel(this.HypermediaRels.root) || {}).href;
@@ -100,7 +100,7 @@
 
 				if (enrollmentEntities.length === 1) {
 					this._organizationsUrl = enrollmentEntities[0].getLinkByRel(this.HypermediaRels.organization).href;
-					
+
 					this._organizationsRequest = this._createIronAjaxRequest(this._organizationsRequest, this._organizationsUrl, this._headers, '_onOrganizationsResponse');
 					this._organizationsRequest.generateRequest();
 				}
