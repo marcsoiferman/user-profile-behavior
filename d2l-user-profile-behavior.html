@@ -8,7 +8,7 @@
 
 	window.D2L = window.D2L || {};
 
-	window.D2L.UserProfileBehavior = {
+	window.D2L.UserProfileBehaviorImpl = {
 		properties: {
 			token: String,
 			userUrl: String
@@ -25,10 +25,6 @@
 		_previousUserCall: Object,
 		_school: String,
 		_themeUrl: String,
-		behaviors: [
-			window.D2L.Hypermedia.OrganizationHMBehavior,
-			window.D2L.Hypermedia.HMConstantsBehavior
-		],
 		_createIronAjaxRequest: function(request, url, headers, onResponse) {
 			request = request || document.createElement('iron-ajax');
 			request.url = url;
@@ -150,4 +146,9 @@
 			}
 		}
 	}
+	window.D2L.UserProfileBehavior = [
+		window.D2L.Hypermedia.OrganizationHMBehavior,
+		window.D2L.Hypermedia.HMConstantsBehavior,
+		window.D2L.UserProfileBehaviorImpl
+	]
 </script>
