@@ -32,10 +32,12 @@
 			this.listen(request, 'iron-ajax-response', onResponse);
 			return request;
 		},
-		generateUserRequest: function(userUrl, token) {
+		generateUserRequest: function(userUrl, token, options) {
 			this._previousUserCall = this._previousUserCall || {};
 			this.userUrl = userUrl || this.userUrl;
-			this.token = token || this.toke;
+			this.token = token || this.token;
+			this.options = options || {};
+
 			if (
 				this.userUrl &&
 				this.token &&
@@ -64,19 +66,54 @@
 						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailAlternative) || {}).href;
 					}
 				}
+
 				this._rootUrl = (userResponse.getLinkByRel(this.HypermediaRels.root) || {}).href;
 				if (this._rootUrl) {
 					this._rootReqeust = this._createIronAjaxRequest(this._rootReqeust, this._rootUrl, this._headers, '_onRootResponse');
 					this._rootReqeust.generateRequest();
 				}
 
-				this._enrollmentsUrl = (userResponse.getLinkByRel(this.HypermediaRels.myEnrollments) || {}).href;
-				if (this._enrollmentsUrl) {
-					this._enrollmentsUrl += '?pageSize=2&orgUnitTypeId=3&embedDepth=1';
-					this._enrollmentsRequest = this._createIronAjaxRequest(this._enrollmentsRequest, this._enrollmentsUrl, this._headers, '_onEnrollmentsResponse');
-					this._enrollmentsRequest.generateRequest();
+				if (this.options.background) {
+					this._enrollmentsUrl = (userResponse.getLinkByRel(this.HypermediaRels.myEnrollments) || {}).href;
+					this._folioUrl = (userResponse.getLinkByRel(this.HypermediaRels.Folio.folio) || {}).href;
+					if (this._folioUrl) {
+						this._folioReqeust = this._createIronAjaxRequest(this._folioReqeust, this._folioUrl, this._headers, '_onFolioResponse');
+						this._folioReqeust.generateRequest();
+					}
 				}
 			}
+		},
+		_makeEnrollmentsRequest: function() {
+			// currently only called if we need an image and we can't get one from folio
+			if (this._enrollmentsUrl) {
+				this._enrollmentsUrl += '?pageSize=2&orgUnitTypeId=3&embedDepth=1';
+				this._enrollmentsRequest = this._createIronAjaxRequest(this._enrollmentsRequest, this._enrollmentsUrl, this._headers, '_onEnrollmentsResponse');
+				this._enrollmentsRequest.generateRequest();
+			}
+		},
+		_onFolioResponse: function(response) {
+			if (response.detail.status === 200) {
+				// TODO: Ideally at some point you can get the evidence list filtered by content type
+				var folioResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				var firstEvidenceTile = (folioResponse.getSubEntitiesByClass('evidence') || [])[0];
+			} else {
+				// Since the folio request failed, try to get the enrollment image
+				this._makeEnrollmentsRequest();
+			}
+		},
+		_onEvidenceTileResponse: function(response) {
+			if (response.detail.status === 200) {
+				var evidenceTileResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
+				var content = evidenceTileResponse.getSubEntityByRel(this.HypermediaRels.Folio.contentItem);
+
+				var type = (content.properties.type || {}).name;
+				if (type && type !== 'GoogleDrive' && type !== 'Mp4') {
+					this._backgroundUrl = content.properties.url;
+					return;
+				};
+			}
+			// Since the folio evidence request didn't return an image, try to get the enrollment image
+			this._makeEnrollmentsRequest();
 		},
 		_onRootResponse: function(response) {
 			if (response.detail.status === 200) {
