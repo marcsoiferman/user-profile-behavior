@@ -66,7 +66,6 @@
 						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailAlternative) || {}).href;
 					}
 				}
-
 				this._rootUrl = (userResponse.getLinkByRel(this.HypermediaRels.root) || {}).href;
 				if (this._rootUrl) {
 					this._rootReqeust = this._createIronAjaxRequest(this._rootReqeust, this._rootUrl, this._headers, '_onRootResponse');
