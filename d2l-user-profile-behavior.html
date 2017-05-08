@@ -96,6 +96,13 @@
 				// TODO: Ideally at some point you can get the evidence list filtered by content type
 				var folioResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
 				var firstEvidenceTile = (folioResponse.getSubEntitiesByClass('evidence') || [])[0];
+				if (firstEvidenceTile) {
+					this._evidenceTileUrl = (firstEvidenceTile.getLinkByRel('self') || {}).href;
+					if (this._evidenceTileUrl) {
+						this._evidenceTileRequest = this._createIronAjaxRequest(this._evidenceTileRequest, this._evidenceTileUrl, this._headers, '_onEvidenceTileResponse');
+						this._evidenceTileRequest.generateRequest();
+					}
+				}
 			} else {
 				// Since the folio request failed, try to get the enrollment image
 				this._makeEnrollmentsRequest();
