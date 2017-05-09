@@ -92,33 +92,19 @@
 		},
 		_onFolioResponse: function(response) {
 			if (response.detail.status === 200) {
-				// TODO: Ideally at some point you can get the evidence list filtered by content type
 				var folioResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var firstEvidenceTile = (folioResponse.getSubEntitiesByClass('evidence') || [ null ])[0];
-				if (firstEvidenceTile) {
-					this._evidenceTileUrl = (firstEvidenceTile.getLinkByRel('self') || {}).href;
-					if (this._evidenceTileUrl) {
-						this._evidenceTileRequest = this._createIronAjaxRequest(this._evidenceTileRequest, this._evidenceTileUrl, this._headers, '_onEvidenceTileResponse');
-						this._evidenceTileRequest.generateRequest();
-					}
+				var tiles = (folioResponse.getSubEntitiesByClass('evidence'));
+				for (var i = 0; i < tiles.length; i++) {
+					var content = tiles[i].getSubEntityByRel(this.HypermediaRels.Folio.contentItem);
+					var type = (content.properties.type || {}).name;
+					if (type === 'Jpg' && type !== 'Png') {
+						this._backgroundUrl = content.properties.url;
+						return;
+					};
 				}
-			} else {
-				// Since the folio request failed, try to get the enrollment image
-				this._makeEnrollmentsRequest();
 			}
-		},
-		_onEvidenceTileResponse: function(response) {
-			if (response.detail.status === 200) {
-				var evidenceTileResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var content = evidenceTileResponse.getSubEntityByRel(this.HypermediaRels.Folio.contentItem);
 
-				var type = (content.properties.type || {}).name;
-				if (type && type !== 'GoogleDrive' && type !== 'Mp4') {
-					this._backgroundUrl = content.properties.url;
-					return;
-				};
-			}
-			// Since the folio evidence request didn't return an image, try to get the enrollment image
+			// Since the folio request failed, try to get the enrollment image
 			this._makeEnrollmentsRequest();
 		},
 		_onRootResponse: function(response) {
