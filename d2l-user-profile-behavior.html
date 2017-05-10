@@ -78,6 +78,8 @@
 					if (this._folioUrl) {
 						this._folioReqeust = this._createIronAjaxRequest(this._folioReqeust, this._folioUrl, this._headers, '_onFolioResponse');
 						this._folioReqeust.generateRequest();
+					} else {
+						this._makeEnrollmentsRequest();
 					}
 				}
 			}
