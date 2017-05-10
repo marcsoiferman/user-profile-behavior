@@ -1,0 +1,31 @@
+{
+  "name": "d2l-user-profile-behavior",
+  "description": "Brightspace User Profile Behavior",
+  "private": true,
+  "scripts": {
+    "postinstall": "bower install",
+    "test": "eslint --ext .js,.html ."
+  },
+  "homepage": "https://github.com/Brightspace/user-profile-behavior",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Brightspace/user-profile-behavior.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Brightspace/user-profile-behavior/issues"
+  },
+  "keywords": [
+    "d2l",
+  	"user",
+  	"profile",
+    "behavior"
+  ],
+  "author": "D2L Corporation",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "bower": "^1.8.0",
+    "eslint": "^3.19.0",
+    "eslint-config-brightspace": "^0.2.4",
+    "eslint-plugin-html": "^2.0.3"
+  }
+}

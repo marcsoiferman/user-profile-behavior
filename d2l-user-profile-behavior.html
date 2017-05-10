@@ -50,7 +50,7 @@
 					Authorization: 'Bearer ' + this.token,
 					Accept: 'application/vnd.siren+json'
 				};
-				this._userRequest = this._createIronAjaxRequest(this._userRequest, this.userUrl, this._headers, '_onUserRequest')
+				this._userRequest = this._createIronAjaxRequest(this._userRequest, this.userUrl, this._headers, '_onUserRequest');
 				this._userRequest.generateRequest();
 			}
 		},
@@ -177,10 +177,10 @@
 				}
 			}
 		}
-	}
+	};
 	window.D2L.UserProfileBehavior = [
 		window.D2L.Hypermedia.OrganizationHMBehavior,
 		window.D2L.Hypermedia.HMConstantsBehavior,
 		window.D2L.UserProfileBehaviorImpl
-	]
+	];
 </script>

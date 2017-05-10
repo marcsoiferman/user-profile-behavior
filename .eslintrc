@@ -1,0 +1,5 @@
+extends: brightspace
+env:
+  browser: true
+plugins:
+  [html]

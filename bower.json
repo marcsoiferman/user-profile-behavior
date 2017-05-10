@@ -18,14 +18,9 @@
     "**/.*",
     "node_modules",
     "bower_components",
-    ".editorconfig",
-    ".eslintrc",
-    ".gitignore",
-    ".travis.yml",
-    "package.json",
     "test",
-    "tests",
-    "/demo/"
+    "demo",
+    "package.json"
   ],
   "dependencies": {
     "polymer": "^1.7.0",
