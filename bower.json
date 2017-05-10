@@ -7,8 +7,8 @@
   "license": "Apache-2.0",
   "keywords": [
     "d2l",
-  	"user",
-  	"profile",
+    "user",
+    "profile",
     "behavior"
   ],
   "homepage": "https://github.com/Brightspace/d2l-user-profile-behavior",
@@ -19,12 +19,13 @@
     "node_modules",
     "bower_components",
     "test",
-    "demo",
-    "package.json"
+    "package.json",
+    "wct.conf.json"
   ],
   "dependencies": {
     "polymer": "^1.7.0",
     "d2l-hm-constants-behavior": "git://github.com/Brightspace/d2l-hm-constants-behavior.git#^1.0.0",
-    "d2l-organization-hm-behavior": "git://github.com/Brightspace/organization-hm-behavior.git#^1.0.0"
+    "d2l-organization-hm-behavior": "git://github.com/Brightspace/organization-hm-behavior.git#^1.0.0",
+    "iron-ajax": "^1.4.4"
   }
 }

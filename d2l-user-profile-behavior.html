@@ -50,11 +50,11 @@
 					Authorization: 'Bearer ' + this.token,
 					Accept: 'application/vnd.siren+json'
 				};
-				this._userRequest = this._createIronAjaxRequest(this._userRequest, this.userUrl, this._headers, '_onUserRequest');
+				this._userRequest = this._createIronAjaxRequest(this._userRequest, this.userUrl, this._headers, '_onUserResponse');
 				this._userRequest.generateRequest();
 			}
 		},
-		_onUserRequest: function(response) {
+		_onUserResponse: function(response) {
 			if (response.detail.status === 200) {
 				var userResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
 				this._name = (userResponse.getSubEntityByRel(this.HypermediaRels.displayName) || { properties: {} }).properties.name;
@@ -69,8 +69,8 @@
 				}
 				this._rootUrl = (userResponse.getLinkByRel(this.HypermediaRels.root) || {}).href;
 				if (this._rootUrl) {
-					this._rootReqeust = this._createIronAjaxRequest(this._rootReqeust, this._rootUrl, this._headers, '_onRootResponse');
-					this._rootReqeust.generateRequest();
+					this._rootRequest = this._createIronAjaxRequest(this._rootRequest, this._rootUrl, this._headers, '_onRootResponse');
+					this._rootRequest.generateRequest();
 				}
 
 				if (this.options.background) {
@@ -103,7 +103,7 @@
 					if (type === 'Jpg' && type !== 'Png') {
 						this._backgroundUrl = content.properties.url;
 						return;
-					};
+					}
 				}
 			}
 
