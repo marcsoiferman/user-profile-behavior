@@ -1,0 +1,8 @@
+extends: brightspace
+env:
+  browser: true
+plugins:
+  [html]
+globals:
+  Polymer: false
+  WCT: false
