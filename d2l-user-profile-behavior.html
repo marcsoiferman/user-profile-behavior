@@ -96,10 +96,10 @@
 		_onFolioResponse: function(response) {
 			if (response.detail.status === 200) {
 				var folioResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var tiles = (folioResponse.getSubEntitiesByClass('evidence'));
+				var tiles = (folioResponse.getSubEntitiesByClass('Evidence'));
 				for (var i = 0; i < tiles.length; i++) {
 					var content = tiles[i].getSubEntityByRel(this.HypermediaRels.Folio.contentItem);
-					var type = (content.properties.type || {}).name;
+					var type = content.properties.type;
 					if (type === 'Jpg' && type !== 'Png') {
 						this._backgroundUrl = content.properties.url;
 						return;
