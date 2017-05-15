@@ -96,7 +96,7 @@
 		_onFolioResponse: function(response) {
 			if (response.detail.status === 200) {
 				var folioResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var tiles = (folioResponse.getSubEntitiesByClass('Evidence'));
+				var tiles = (folioResponse.getSubEntitiesByRel(this.HypermediaRels.Folio.evidence));
 				for (var i = 0; i < tiles.length; i++) {
 					var content = tiles[i].getSubEntityByRel(this.HypermediaRels.Folio.contentItem);
 					var type = content.properties.type;
