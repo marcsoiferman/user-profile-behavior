@@ -7,9 +7,8 @@
 <script>
 	'use strict';
 
-	window.D2L = window.D2L || {};
-
-	window.D2L.UserProfileBehaviorImpl = {
+	/* @polymerBehavior userProfileBehaviorImpl */
+	var userProfileBehaviorImpl = {
 		properties: {
 			token: String,
 			userUrl: String
@@ -178,9 +177,15 @@
 			}
 		}
 	};
+
+	window.D2L = window.D2L || {};
+	/*
+	* Behavior for user profile-related elements such as user-tile and user-switcher.
+	* @polymerBehavior window.D2L.UserProfileBehavior
+	*/
 	window.D2L.UserProfileBehavior = [
 		window.D2L.Hypermedia.OrganizationHMBehavior,
 		window.D2L.Hypermedia.HMConstantsBehavior,
-		window.D2L.UserProfileBehaviorImpl
+		userProfileBehaviorImpl
 	];
 </script>

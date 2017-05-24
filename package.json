@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "postinstall": "bower install",
-    "test": "npm run test:lint && npm run test:wct",
-    "test:lint": "eslint --ext .js,.html . && eslint --ext .js,.html test/",
+    "test": "npm run test:lint:js && npm run test:lint:wc && npm run test:wct",
+    "test:lint:js": "eslint --ext .js,.html . && eslint --ext .js,.html test/",
+    "test:lint:wc": "polymer lint --input d2l-user-profile-behavior.html",
     "test:wct": "cross-env LAUNCHPAD_BROWSERS=firefox wct -p"
   },
   "homepage": "https://github.com/Brightspace/user-profile-behavior",
@@ -30,6 +31,7 @@
     "eslint": "^3.19.0",
     "eslint-config-brightspace": "^0.2.4",
     "eslint-plugin-html": "^2.0.3",
-    "web-component-tester": "^5.0.1"
+    "polymer-cli": "^1.1.0",
+    "web-component-tester": "^6.0.0"
   }
 }
