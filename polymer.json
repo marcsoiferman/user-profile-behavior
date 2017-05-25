@@ -1,0 +1,8 @@
+{
+  "lint": {
+    "rules": ["polymer-2-hybrid"]
+  },
+  "sources": [
+    "d2l-user-profile-behavior.html"
+  ]
+}
