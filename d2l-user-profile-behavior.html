@@ -23,7 +23,6 @@
 		_organizationImageUrl: String,
 		_organizationsUrl: String,
 		_previousUserCall: Object,
-		_school: String,
 		_themeUrl: String,
 		_createIronAjaxRequest: function(request, url, headers, onResponse) {
 			request = request || document.createElement('iron-ajax');
@@ -137,9 +136,6 @@
 			if (response.detail.status === 200) {
 				var institutionResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
 				this._themeUrl = (institutionResponse.getLinkByRel(this.HypermediaRels.theme) || {}).href;
-				if (institutionResponse.properties) {
-					this._school = institutionResponse.properties.name;
-				}
 
 				if (this._themeUrl) {
 					this._themeRequest = this._createIronAjaxRequest(this._themeRequest, this._themeUrl, this._headers, '_onThemeResponse');
