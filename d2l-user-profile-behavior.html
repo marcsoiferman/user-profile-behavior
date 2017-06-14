@@ -12,18 +12,24 @@
 		properties: {
 			token: String,
 			userUrl: String,
-			_doneRequests: String,
+			_doneRequests: {
+				type: Boolean,
+				value: false
+			},
 			_backgroundColor: {
 				type: String,
-				observer: '_checkDoneRequests'
+				observer: '_checkDoneRequests',
+				value: ''
 			},
 			_backgroundUrl: {
 				type: String,
-				observer: '_checkDoneRequests'
+				observer: '_checkDoneRequests',
+				value: ''
 			},
 			_name: {
 				type: String,
-				observer: '_checkDoneRequests'
+				observer: '_checkDoneRequests',
+				value: ''
 			}
 		},
 		_enrollmentsUrl: '',
@@ -39,10 +45,28 @@
 			request.url = url;
 			request.headers = headers;
 			this.listen(request, 'iron-ajax-response', onResponse);
+			this.listen(request, 'iron-ajax-error', onResponse);
 			return request;
 		},
 		_checkDoneRequests: function() {
-			this._doneRequests = !!(this._backgroundUrl || this._backgroundColor) && !!this._name;
+			var backgroundExists = !!(this._backgroundUrl || this._backgroundColor);
+			var backgroundNeeded = (this.options || {}).background;
+			var doneRequests = (!backgroundNeeded || backgroundExists) && !!this._name;
+
+			if (doneRequests) {
+ 				if (this._backgroundUrl) {
+					// preload the image a bit so after the fade-in it's hopefully loaded
+					var self = this;
+					var setLoaded = function() {
+						self._doneRequests = true;
+					};
+					imagePreloader.addEventListener('load', setLoaded);
+					imagePreloader.addEventListener('error', setLoaded);
+					imagePreloader.setAttribute('src', this._backgroundUrl);
+				}
+
+				this._doneRequests = true;
+			}
 		},
 		generateUserRequest: function(userUrl, token, options) {
 			this._previousUserCall = this._previousUserCall || {};
