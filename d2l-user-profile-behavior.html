@@ -60,9 +60,10 @@
 					var setLoaded = function() {
 						self._doneRequests = true;
 					};
+					var imagePreloader = document.createElement('img');
 					imagePreloader.addEventListener('load', setLoaded);
 					imagePreloader.addEventListener('error', setLoaded);
-					imagePreloader.setAttribute('src', this._backgroundUrl);
+					imagePreloader.setAttribute('src', self._backgroundUrl);
 				}
 
 				this._doneRequests = true;
