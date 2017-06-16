@@ -11,31 +11,73 @@
 	var userProfileBehaviorImpl = {
 		properties: {
 			token: String,
-			userUrl: String
+			userUrl: String,
+			_doneRequests: {
+				type: Boolean,
+				value: false
+			},
+			_backgroundColor: {
+				type: String,
+				observer: '_checkDoneRequests',
+				value: ''
+			},
+			_backgroundUrl: {
+				type: String,
+				observer: '_checkDoneRequests',
+				value: ''
+			},
+			_name: {
+				type: String,
+				observer: '_checkDoneRequests',
+				value: ''
+			}
 		},
-		_backgroundColor: String,
-		_backgroundUrl: String,
-		_enrollmentsUrl: String,
-		_headers: String,
-		_iconUrl: String,
-		_institutionUrl: String,
-		_name: String,
-		_organizationImageUrl: String,
-		_organizationsUrl: String,
-		_previousUserCall: Object,
-		_themeUrl: String,
+		_backgroundColor: '',
+		_backgroundUrl: '',
+		_enrollmentsUrl: '',
+		_headers: '',
+		_iconUrl: '',
+		_institutionUrl: '',
+		_name: '',
+		_organizationImageUrl: '',
+		_organizationsUrl: '',
+		_previousUserCall: null,
+		_themeUrl: '',
 		_createIronAjaxRequest: function(request, url, headers, onResponse) {
 			request = request || document.createElement('iron-ajax');
 			request.url = url;
 			request.headers = headers;
 			this.listen(request, 'iron-ajax-response', onResponse);
+			this.listen(request, 'iron-ajax-error', onResponse);
 			return request;
+		},
+		_checkDoneRequests: function() {
+			var backgroundExists = !!(this._backgroundUrl || this._backgroundColor);
+			var backgroundNeeded = (this.options || {}).background;
+			var doneRequests = (!backgroundNeeded || backgroundExists) && !!this._name;
+
+			if (doneRequests) {
+				if (this._backgroundUrl) {
+					// preload the image a bit so after the fade-in it's hopefully loaded
+					var self = this;
+					var setLoaded = function() {
+						self._doneRequests = true;
+					};
+					var imagePreloader = document.createElement('img');
+					imagePreloader.addEventListener('load', setLoaded);
+					imagePreloader.addEventListener('error', setLoaded);
+					imagePreloader.setAttribute('src', self._backgroundUrl);
+				}
+
+				this._doneRequests = true;
+			}
 		},
 		generateUserRequest: function(userUrl, token, options) {
 			this._previousUserCall = this._previousUserCall || {};
 			this.userUrl = userUrl || this.userUrl;
 			this.token = token || this.token;
 			this.options = options || {};
+			this._doneRequests = false;
 
 			if (
 				this.userUrl &&
@@ -65,11 +107,8 @@
 						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailAlternative) || {}).href;
 					}
 				}
+
 				this._rootUrl = (userResponse.getLinkByRel(this.HypermediaRels.root) || {}).href;
-				if (this._rootUrl) {
-					this._rootRequest = this._createIronAjaxRequest(this._rootRequest, this._rootUrl, this._headers, '_onRootResponse');
-					this._rootRequest.generateRequest();
-				}
 
 				if (this.options.background) {
 					this._enrollmentsUrl = (userResponse.getLinkByRel(this.HypermediaRels.myEnrollments) || {}).href;
@@ -83,12 +122,21 @@
 				}
 			}
 		},
+		_makeRootRequest: function() {
+			if (this._rootUrl) {
+				this._rootRequest = this._createIronAjaxRequest(this._rootRequest, this._rootUrl, this._headers, '_onRootResponse');
+				this._rootRequest.generateRequest();
+			}
+		},
 		_makeEnrollmentsRequest: function() {
 			// currently only called if we need an image and we can't get one from folio
 			if (this._enrollmentsUrl) {
 				this._enrollmentsUrl += '?pageSize=2&orgUnitTypeId=3&embedDepth=1';
 				this._enrollmentsRequest = this._createIronAjaxRequest(this._enrollmentsRequest, this._enrollmentsUrl, this._headers, '_onEnrollmentsResponse');
 				this._enrollmentsRequest.generateRequest();
+			} else {
+				// No enrollments url, get the background color
+				this._makeRootRequest();
 			}
 		},
 		_onFolioResponse: function(response) {
@@ -116,6 +164,8 @@
 				if (this._institutionUrl) {
 					this._institutionRequest = this._createIronAjaxRequest(this._institutionRequest, this._institutionUrl, this._headers, '_onInstitutionResponse');
 					this._institutionRequest.generateRequest();
+				} else {
+					this._backgroundColor = 'initial';
 				}
 			}
 		},
@@ -129,8 +179,12 @@
 
 					this._organizationsRequest = this._createIronAjaxRequest(this._organizationsRequest, this._organizationsUrl, this._headers, '_onOrganizationsResponse');
 					this._organizationsRequest.generateRequest();
+					return;
 				}
 			}
+
+			// More than 1 enrollment, get the background color
+			this._makeRootRequest();
 		},
 		_onInstitutionResponse: function(response) {
 			if (response.detail.status === 200) {
@@ -140,8 +194,11 @@
 				if (this._themeUrl) {
 					this._themeRequest = this._createIronAjaxRequest(this._themeRequest, this._themeUrl, this._headers, '_onThemeResponse');
 					this._themeRequest.generateRequest();
+					return;
 				}
 			}
+
+			this._backgroundColor = 'initial';
 		},
 		_onOrganizationsResponse: function(response) {
 			if (response.detail.status === 200) {
@@ -152,14 +209,21 @@
 					this._organizationImageUrl = imageLink.href;
 					this._organizationImageRequest = this._createIronAjaxRequest(this._organizationImageRequest, this._organizationImageUrl, this._headers, '_onOrganizationImageResponse');
 					this._organizationImageRequest.generateRequest();
+					return;
 				}
 			}
+
+			// No organization image, get the background color
+			this._makeRootRequest();
 		},
 		_onOrganizationImageResponse: function(response) {
 			if (response.detail.status === 200) {
 				var organizationImageResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
 				var backgroundImages = this._getImageLinks(organizationImageResponse, this.HypermediaClasses.courseImage.wide);
 				this._backgroundUrl = backgroundImages.highMin || backgroundImages.lowMax;
+			} else {
+				// image request failed, get the background color
+				this._makeRootRequest();
 			}
 		},
 
@@ -169,8 +233,11 @@
 
 				if (theme.properties) {
 					this._backgroundColor = theme.properties.BackgroundColor;
+					return;
 				}
 			}
+
+			this._backgroundColor = 'initial';
 		}
 	};
 
