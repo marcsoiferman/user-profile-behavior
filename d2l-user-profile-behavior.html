@@ -1,5 +1,4 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../d2l-organization-hm-behavior/d2l-organization-hm-behavior.html">
 <link rel="import" href="../d2l-hm-constants-behavior/d2l-hm-constants-behavior.html">
 
@@ -12,6 +11,10 @@
 		properties: {
 			token: String,
 			userUrl: String,
+			options: {
+				type: Object,
+				value: function() { return {}; }
+			},
 			_doneRequests: {
 				type: Boolean,
 				value: false
@@ -32,25 +35,11 @@
 				value: ''
 			}
 		},
-		_backgroundColor: '',
-		_backgroundUrl: '',
+		_rootUrl: '',
 		_enrollmentsUrl: '',
-		_headers: '',
+		_folioUrl: '',
 		_iconUrl: '',
-		_institutionUrl: '',
-		_name: '',
-		_organizationImageUrl: '',
-		_organizationsUrl: '',
 		_previousUserCall: null,
-		_themeUrl: '',
-		_createIronAjaxRequest: function(request, url, headers, onResponse) {
-			request = request || document.createElement('iron-ajax');
-			request.url = url;
-			request.headers = headers;
-			this.listen(request, 'iron-ajax-response', onResponse);
-			this.listen(request, 'iron-ajax-error', onResponse);
-			return request;
-		},
 		_checkDoneRequests: function() {
 			var backgroundExists = !!(this._backgroundUrl || this._backgroundColor);
 			var backgroundNeeded = (this.options || {}).background;
@@ -76,7 +65,7 @@
 			this._previousUserCall = this._previousUserCall || {};
 			this.userUrl = userUrl || this.userUrl;
 			this.token = token || this.token;
-			this.options = options || {};
+			this.options = options || this.options;
 			this._doneRequests = false;
 
 			if (
@@ -86,158 +75,154 @@
 				this.token !== this._previousUserCall.token
 			) {
 				this._previousUserCall = { userUrl: this.userUrl, token: this.token };
-				this._headers = {
-					Authorization: 'Bearer ' + this.token,
-					Accept: 'application/vnd.siren+json'
-				};
-				this._userRequest = this._createIronAjaxRequest(this._userRequest, this.userUrl, this._headers, '_onUserResponse');
-				this._userRequest.generateRequest();
+
+				return this._fetchUser()
+					.then(this._fetchFolio.bind(this))
+					.catch(function() {
+						// Folio image fetch failed, falling back to organization image
+						return this._fetchEnrollments()
+							.then(this._fetchOrganization.bind(this))
+							.then(this._fetchOrganizationImage.bind(this))
+							.catch(function() {
+								// Organization image fetch failed, falling back to theme colour
+								return this._fetchRoot()
+									.then(this._fetchInstitution.bind(this))
+									.then(this._fetchTheme.bind(this))
+									.catch(function() {
+										// If all else fails!
+										this._backgroundColor = 'initial';
+									}.bind(this));
+							}.bind(this));
+					}.bind(this));
 			}
+
+			return Promise.resolve();
 		},
-		_onUserResponse: function(response) {
-			if (response.detail.status === 200) {
-				var userResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				this._name = (userResponse.getSubEntityByRel(this.HypermediaRels.displayName) || { properties: {} }).properties.name;
-				var profile = userResponse.getSubEntityByRel(this.HypermediaRels.userProfile);
-				if (profile) {
-					var image = profile.getSubEntityByRel(this.HypermediaRels.profileImage);
-					if (image.class.indexOf('default-image') > -1) {
+		_fetchSirenEntity: function(url) {
+			var request = new Request(url, {
+				headers: new Headers({
+					accept: 'application/vnd.siren+json',
+					authorization: 'Bearer ' + this.token
+				})
+			});
+
+			return window.d2lfetch
+				.fetch(request)
+				.then(function(response) {
+					if (response.ok) {
+						return response.json();
+					}
+					return Promise.reject(new Error(response.status));
+				})
+				.then(window.D2L.Hypermedia.Siren.Parse);
+		},
+		_fetchUser: function() {
+			return this._fetchSirenEntity(this.userUrl).then(function(userEntity) {
+				this._rootUrl = (userEntity.getLinkByRel(this.HypermediaRels.root) || {}).href;
+				this._enrollmentsUrl = (userEntity.getLinkByRel(this.HypermediaRels.myEnrollments) || {}).href;
+				this._folioUrl = (userEntity.getLinkByRel(this.HypermediaRels.Folio.folio) || {}).href;
+
+				var displayNameEntity = userEntity.getSubEntityByRel(this.HypermediaRels.displayName);
+				if (displayNameEntity) {
+					this._name = displayNameEntity.properties && displayNameEntity.properties.name;
+				}
+
+				var profileEntity = userEntity.getSubEntityByRel(this.HypermediaRels.userProfile);
+				if (profileEntity) {
+					var image = profileEntity.getSubEntityByRel(this.HypermediaRels.profileImage);
+
+					if (image.class && image.class.indexOf('default-image') !== -1) {
 						this._iconUrl = null;
 					} else {
-						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailAlternative) || {}).href;
+						this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailRegular) || {}).href;
 					}
 				}
+			}.bind(this));
+		},
+		_fetchFolio: function() {
+			if (!this.options.background) {
+				return Promise.resolve();
+			}
 
-				this._rootUrl = (userResponse.getLinkByRel(this.HypermediaRels.root) || {}).href;
+			if (!this._folioUrl) {
+				return Promise.reject(new Error('Folio URL not set'));
+			}
 
-				if (this.options.background) {
-					this._enrollmentsUrl = (userResponse.getLinkByRel(this.HypermediaRels.myEnrollments) || {}).href;
-					this._folioUrl = (userResponse.getLinkByRel(this.HypermediaRels.Folio.folio) || {}).href;
-					if (this._folioUrl) {
-						this._folioReqeust = this._createIronAjaxRequest(this._folioReqeust, this._folioUrl, this._headers, '_onFolioResponse');
-						this._folioReqeust.generateRequest();
-					} else {
-						this._makeEnrollmentsRequest();
-					}
-				}
-			}
-		},
-		_makeRootRequest: function() {
-			if (this._rootUrl) {
-				this._rootRequest = this._createIronAjaxRequest(this._rootRequest, this._rootUrl, this._headers, '_onRootResponse');
-				this._rootRequest.generateRequest();
-			}
-		},
-		_makeEnrollmentsRequest: function() {
-			// currently only called if we need an image and we can't get one from folio
-			if (this._enrollmentsUrl) {
-				this._enrollmentsUrl += '?pageSize=2&orgUnitTypeId=3&embedDepth=1';
-				this._enrollmentsRequest = this._createIronAjaxRequest(this._enrollmentsRequest, this._enrollmentsUrl, this._headers, '_onEnrollmentsResponse');
-				this._enrollmentsRequest.generateRequest();
-			} else {
-				// No enrollments url, get the background color
-				this._makeRootRequest();
-			}
-		},
-		_onFolioResponse: function(response) {
-			if (response.detail.status === 200) {
-				var folioResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var tiles = (folioResponse.getSubEntitiesByRel(this.HypermediaRels.Folio.evidence));
+			return this._fetchSirenEntity(this._folioUrl).then(function(folioEntity) {
+				var tiles = (folioEntity.getSubEntitiesByRel(this.HypermediaRels.Folio.evidence));
 				for (var i = 0; i < tiles.length; i++) {
 					var content = tiles[i].getSubEntityByRel(this.HypermediaRels.Folio.contentItem);
 					var type = content.properties.type;
-					if (type === 'Jpg' && type !== 'Png') {
-						this._backgroundUrl = content.properties.url;
-						return;
+					switch (type) {
+						case 'Png':
+						case 'Jpg':
+						case 'Gif':
+							this._backgroundUrl = content.properties.url;
+							return;
 					}
 				}
+				return Promise.reject(new Error('Did not find adequate Folio evidence'));
+			}.bind(this));
+		},
+		_fetchEnrollments: function() {
+			if (!this._enrollmentsUrl) {
+				return Promise.reject(new Error('Enrollments URL not set'));
 			}
 
-			// Since the folio request failed, try to get the enrollment image
-			this._makeEnrollmentsRequest();
-		},
-		_onRootResponse: function(response) {
-			if (response.detail.status === 200) {
-				var rootResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				this._institutionUrl = (rootResponse.getLinkByRel(this.HypermediaRels.organization) || {}).href;
-
-				if (this._institutionUrl) {
-					this._institutionRequest = this._createIronAjaxRequest(this._institutionRequest, this._institutionUrl, this._headers, '_onInstitutionResponse');
-					this._institutionRequest.generateRequest();
-				} else {
-					this._backgroundColor = 'initial';
-				}
-			}
-		},
-		_onEnrollmentsResponse: function(response) {
-			if (response.detail.status === 200) {
-				var enrollmentsResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var enrollmentEntities = enrollmentsResponse.getSubEntitiesByRel(this.HypermediaRels.userEnrollment);
+			this._enrollmentsUrl += '?pageSize=2&orgUnitTypeId=3&embedDepth=1';
+			return this._fetchSirenEntity(this._enrollmentsUrl).then(function(enrollmentsEntity) {
+				var enrollmentEntities = enrollmentsEntity.getSubEntitiesByRel(this.HypermediaRels.userEnrollment);
 
 				if (enrollmentEntities.length === 1) {
-					this._organizationsUrl = enrollmentEntities[0].getLinkByRel(this.HypermediaRels.organization).href;
-
-					this._organizationsRequest = this._createIronAjaxRequest(this._organizationsRequest, this._organizationsUrl, this._headers, '_onOrganizationsResponse');
-					this._organizationsRequest.generateRequest();
-					return;
+					var organizationUrl = enrollmentEntities[0].getLinkByRel(this.HypermediaRels.organization).href;
+					return Promise.resolve(organizationUrl);
+				} else {
+					return Promise.reject(new Error('User does not have exactly one enrollment: ' + enrollmentEntities.length));
 				}
-			}
-
-			// More than 1 enrollment, get the background color
-			this._makeRootRequest();
+			}.bind(this));
 		},
-		_onInstitutionResponse: function(response) {
-			if (response.detail.status === 200) {
-				var institutionResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				this._themeUrl = (institutionResponse.getLinkByRel(this.HypermediaRels.theme) || {}).href;
+		_fetchOrganization: function(organizationUrl) {
+			return this._fetchSirenEntity(organizationUrl).then(function(organizationEntity) {
+				var imageLink = organizationEntity.getSubEntityByClass(this.HypermediaClasses.courseImage.courseImage);
 
-				if (this._themeUrl) {
-					this._themeRequest = this._createIronAjaxRequest(this._themeRequest, this._themeUrl, this._headers, '_onThemeResponse');
-					this._themeRequest.generateRequest();
-					return;
+				if (!imageLink) {
+					return Promise.reject(new Error('Organization image link not found'));
 				}
-			}
 
-			this._backgroundColor = 'initial';
+				var organizationImageUrl = imageLink.href;
+				return Promise.resolve(organizationImageUrl);
+			}.bind(this));
 		},
-		_onOrganizationsResponse: function(response) {
-			if (response.detail.status === 200) {
-				var organizationsResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var imageLink = organizationsResponse.getSubEntityByClass( this.HypermediaClasses.courseImage.courseImage);
-
-				if (imageLink) {
-					this._organizationImageUrl = imageLink.href;
-					this._organizationImageRequest = this._createIronAjaxRequest(this._organizationImageRequest, this._organizationImageUrl, this._headers, '_onOrganizationImageResponse');
-					this._organizationImageRequest.generateRequest();
-					return;
-				}
-			}
-
-			// No organization image, get the background color
-			this._makeRootRequest();
-		},
-		_onOrganizationImageResponse: function(response) {
-			if (response.detail.status === 200) {
-				var organizationImageResponse = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-				var backgroundImages = this._getImageLinks(organizationImageResponse, this.HypermediaClasses.courseImage.wide);
+		_fetchOrganizationImage: function(organizationImageUrl) {
+			return this._fetchSirenEntity(organizationImageUrl).then(function(organizationImageEntity) {
+				var backgroundImages = this._getImageLinks(organizationImageEntity, this.HypermediaClasses.courseImage.wide);
 				this._backgroundUrl = backgroundImages.highMin || backgroundImages.lowMax;
-			} else {
-				// image request failed, get the background color
-				this._makeRootRequest();
-			}
+			}.bind(this));
 		},
-
-		_onThemeResponse: function(response) {
-			if (response.detail.status === 200) {
-				var theme = window.D2L.Hypermedia.Siren.Parse(response.detail.xhr.response);
-
-				if (theme.properties) {
-					this._backgroundColor = theme.properties.BackgroundColor;
-					return;
-				}
+		_fetchRoot: function() {
+			if (!this._rootUrl) {
+				return Promise.reject(new Error('Root URL not set'));
 			}
 
-			this._backgroundColor = 'initial';
+			return this._fetchSirenEntity(this._rootUrl).then(function(rootEntity) {
+				var institutionUrl = (rootEntity.getLinkByRel(this.HypermediaRels.organization) || {}).href;
+				return Promise.resolve(institutionUrl);
+			}.bind(this));
+		},
+		_fetchInstitution: function(institutionUrl) {
+			return this._fetchSirenEntity(institutionUrl).then(function(institutionEntity) {
+				var themeUrl = (institutionEntity.getLinkByRel(this.HypermediaRels.theme) || {}).href;
+				return Promise.resolve(themeUrl);
+			}.bind(this));
+		},
+		_fetchTheme: function(themeUrl) {
+			return this._fetchSirenEntity(themeUrl).then(function(themeEntity) {
+				if (themeEntity.properties) {
+					this._backgroundColor = themeEntity.properties.BackgroundColor;
+				} else {
+					return Promise.reject(new Error('Theme colour not available'));
+				}
+			}.bind(this));
 		}
 	};
 

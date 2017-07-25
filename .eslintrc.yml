@@ -1,4 +1,5 @@
-extends: brightspace
+extends:
+  brightspace
 env:
   browser: true
 plugins:
@@ -6,3 +7,4 @@ plugins:
 globals:
   Polymer: false
   WCT: false
+  Promise: false
