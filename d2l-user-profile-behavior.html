@@ -211,7 +211,7 @@
 		},
 		_fetchInstitution: function(institutionUrl) {
 			return this._fetchSirenEntity(institutionUrl).then(function(institutionEntity) {
-				var themeUrl = (institutionEntity.getLinkByRel(this.HypermediaRels.theme) || {}).href;
+				var themeUrl = (institutionEntity.getLinkByRel(this.HypermediaRels.Themes.theme) || {}).href;
 				return Promise.resolve(themeUrl);
 			}.bind(this));
 		},
