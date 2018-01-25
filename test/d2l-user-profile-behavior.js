@@ -1,7 +1,3 @@
-/* global describe, it, expect, fixture, beforeEach, afterEach, sinon */
-
-'use strict';
-
 describe('d2l-user-profile-behavior', function() {
 	var component,
 		sandbox;

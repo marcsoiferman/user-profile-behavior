@@ -4,10 +4,8 @@
 
 <script src="https://s.brightspace.com/lib/siren-parser/6.0.0/siren-parser.js"></script>
 <script>
-	'use strict';
-
-	/* @polymerBehavior userProfileBehaviorImpl */
-	var userProfileBehaviorImpl = {
+	/* @polymerBehavior window.D2L.UserProfileBehavior */
+	window.D2L.UserProfileBehaviorImpl = {
 		properties: {
 			token: String,
 			userUrl: String,
@@ -239,8 +237,8 @@
 	* @polymerBehavior window.D2L.UserProfileBehavior
 	*/
 	window.D2L.UserProfileBehavior = [
-		window.D2L.Hypermedia.OrganizationHMBehavior,
+		D2L.PolymerBehaviors.Hypermedia.OrganizationHMBehavior,
 		window.D2L.Hypermedia.HMConstantsBehavior,
-		userProfileBehaviorImpl
+		window.D2L.UserProfileBehaviorImpl
 	];
 </script>
