@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "postinstall": "polymer install",
-    "test": "npm run test:lint:js && npm run test:lint:wc && npm run test:wct",
+    "test": "npm run lint && npm run test:wct",
+    "lint": "npm run test:lint:js && npm run test:lint:wc",
     "test:lint:js": "eslint --ext .js,.html .",
     "test:lint:wc": "polymer lint",
-    "test:wct": "cross-env LAUNCHPAD_BROWSERS=firefox wct -p"
+    "test:wct": "polymer test --skip-plugin sauce"
   },
   "homepage": "https://github.com/Brightspace/user-profile-behavior",
   "repository": {
@@ -27,7 +28,6 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "bower": "^1.8.0",
-    "cross-env": "^4.0.0",
     "eslint": "^4.15.0",
     "eslint-config-brightspace": "^0.4.0",
     "eslint-plugin-html": "^4.0.1",
