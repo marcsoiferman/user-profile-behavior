@@ -25,7 +25,8 @@
   "dependencies": {
     "polymer": "^1.7.0",
     "d2l-hm-constants-behavior": "git://github.com/Brightspace/d2l-hm-constants-behavior.git#^3.0.0",
-    "d2l-organization-hm-behavior": "git://github.com/Brightspace/organization-hm-behavior.git#^1.0.0"
+    "d2l-organization-hm-behavior": "git://github.com/Brightspace/organization-hm-behavior.git#^1.0.0",
+    "siren-parser-import": "Brightspace/siren-parser-import#^7.0.0"
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0"
