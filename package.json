@@ -3,10 +3,10 @@
   "description": "Brightspace User Profile Behavior",
   "private": true,
   "scripts": {
-    "postinstall": "polymer install",
+    "postinstall": "polymer install --variants",
     "test": "npm run lint && npm run test:wct",
     "lint": "npm run test:lint:js && npm run test:lint:wc",
-    "test:lint:js": "eslint --ext .js,.html .",
+    "test:lint:js": "eslint --ext *.html",
     "test:lint:wc": "polymer lint",
     "test:wct": "polymer test --skip-plugin sauce"
   },
@@ -27,7 +27,6 @@
   "author": "D2L Corporation",
   "license": "Apache-2.0",
   "devDependencies": {
-    "bower": "^1.8.0",
     "eslint": "^4.15.0",
     "eslint-config-brightspace": "^0.4.0",
     "eslint-plugin-html": "^4.0.1",
