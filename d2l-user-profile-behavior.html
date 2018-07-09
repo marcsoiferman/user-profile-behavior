@@ -200,7 +200,7 @@
 		},
 		_fetchOrganizationImage: function(organizationImageUrl) {
 			return this._fetchSirenEntity(organizationImageUrl).then(function(organizationImageEntity) {
-				var backgroundImages = this._getImageLinks(organizationImageEntity, this.HypermediaClasses.courseImage.wide);
+				var backgroundImages = this._getBestImageLinks(organizationImageEntity, this.HypermediaClasses.courseImage.wide);
 				this._backgroundUrl = backgroundImages.highMin || backgroundImages.lowMax;
 			}.bind(this));
 		},
