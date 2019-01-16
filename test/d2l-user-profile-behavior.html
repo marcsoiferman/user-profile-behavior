@@ -2,9 +2,9 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-		<script src="../../web-component-tester/browser.js"></script>
-		<link rel="import" href="consumer-element.html">
+		<script src="../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+		<script src="../../wct-browser-legacy/browser.js"></script>
+		<script type="module" src="./consumer-element.js"></script>
 	</head>
 	<body>
 		<test-fixture id="default-fixture">
@@ -12,6 +12,6 @@
 				<consumer-element></consumer-element>
 			</template>
 		</test-fixture>
-		<script src="d2l-user-profile-behavior.js"></script>
+		<script src="./d2l-user-profile-behavior.js"></script>
 	</body>
 </html>
