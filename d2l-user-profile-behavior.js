@@ -1,7 +1,8 @@
 import '@polymer/polymer/polymer-legacy.js';
 import 'd2l-organization-hm-behavior/d2l-organization-hm-behavior.js';
-import 'd2l-hypermedia-constants/d2l-hm-constants-behavior.js';
-import 'siren-parser/siren-parser.js';
+import { Classes, Rels } from 'd2l-hypermedia-constants';
+import SirenParse from 'siren-parser';
+
 /* @polymerBehavior window.D2L.UserProfileBehavior */
 window.D2L.UserProfileBehaviorImpl = {
 	properties: {
@@ -117,27 +118,27 @@ window.D2L.UserProfileBehaviorImpl = {
 				}
 				return Promise.reject(new Error(response.status));
 			})
-			.then(window.D2L.Hypermedia.Siren.Parse);
+			.then(SirenParse);
 	},
 	_fetchUser: function() {
 		return this._fetchSirenEntity(this.userUrl).then(function(userEntity) {
-			this._rootUrl = (userEntity.getLinkByRel(this.HypermediaRels.root) || {}).href;
-			this._enrollmentsUrl = (userEntity.getLinkByRel(this.HypermediaRels.myEnrollments) || {}).href;
-			this._folioUrl = (userEntity.getLinkByRel(this.HypermediaRels.Folio.folio) || {}).href;
+			this._rootUrl = (userEntity.getLinkByRel(Rels.root) || {}).href;
+			this._enrollmentsUrl = (userEntity.getLinkByRel(Rels.myEnrollments) || {}).href;
+			this._folioUrl = (userEntity.getLinkByRel(Rels.Folio.folio) || {}).href;
 
-			var displayNameEntity = userEntity.getSubEntityByRel(this.HypermediaRels.displayName);
+			var displayNameEntity = userEntity.getSubEntityByRel(Rels.displayName);
 			if (displayNameEntity) {
 				this._name = displayNameEntity.properties && displayNameEntity.properties.name;
 			}
 
-			var profileEntity = userEntity.getSubEntityByRel(this.HypermediaRels.userProfile);
+			var profileEntity = userEntity.getSubEntityByRel(Rels.userProfile);
 			if (profileEntity) {
-				var image = profileEntity.getSubEntityByRel(this.HypermediaRels.profileImage);
+				var image = profileEntity.getSubEntityByRel(Rels.profileImage);
 
 				if (image.class && image.class.indexOf('default-image') !== -1) {
 					this._iconUrl = null;
 				} else {
-					this._iconUrl = (image.getLinkByRel(this.HypermediaRels.thumbnailRegular) || {}).href;
+					this._iconUrl = (image.getLinkByRel(Rels.thumbnailRegular) || {}).href;
 				}
 			}
 		}.bind(this));
@@ -152,9 +153,9 @@ window.D2L.UserProfileBehaviorImpl = {
 		}
 
 		return this._fetchSirenEntity(this._folioUrl).then(function(folioEntity) {
-			var tiles = (folioEntity.getSubEntitiesByRel(this.HypermediaRels.Folio.evidence));
+			var tiles = (folioEntity.getSubEntitiesByRel(Rels.Folio.evidence));
 			for (var i = 0; i < tiles.length; i++) {
-				var content = tiles[i].getSubEntityByRel(this.HypermediaRels.Folio.contentItem);
+				var content = tiles[i].getSubEntityByRel(Rels.Folio.contentItem);
 				var type = content.properties.type;
 				switch (type) {
 					case 'Png':
@@ -174,10 +175,10 @@ window.D2L.UserProfileBehaviorImpl = {
 
 		this._enrollmentsUrl += '?pageSize=2&orgUnitTypeId=3&embedDepth=1';
 		return this._fetchSirenEntity(this._enrollmentsUrl).then(function(enrollmentsEntity) {
-			var enrollmentEntities = enrollmentsEntity.getSubEntitiesByRel(this.HypermediaRels.userEnrollment);
+			var enrollmentEntities = enrollmentsEntity.getSubEntitiesByRel(Rels.userEnrollment);
 
 			if (enrollmentEntities.length === 1) {
-				var organizationUrl = enrollmentEntities[0].getLinkByRel(this.HypermediaRels.organization).href;
+				var organizationUrl = enrollmentEntities[0].getLinkByRel(Rels.organization).href;
 				return Promise.resolve(organizationUrl);
 			} else {
 				return Promise.reject(new Error('User does not have exactly one enrollment: ' + enrollmentEntities.length));
@@ -186,7 +187,7 @@ window.D2L.UserProfileBehaviorImpl = {
 	},
 	_fetchOrganization: function(organizationUrl) {
 		return this._fetchSirenEntity(organizationUrl).then(function(organizationEntity) {
-			var imageLink = organizationEntity.getSubEntityByClass(this.HypermediaClasses.courseImage.courseImage);
+			var imageLink = organizationEntity.getSubEntityByClass(Classes.courseImage.courseImage);
 
 			if (!imageLink) {
 				return Promise.reject(new Error('Organization image link not found'));
@@ -198,7 +199,7 @@ window.D2L.UserProfileBehaviorImpl = {
 	},
 	_fetchOrganizationImage: function(organizationImageUrl) {
 		return this._fetchSirenEntity(organizationImageUrl).then(function(organizationImageEntity) {
-			var backgroundImages = this._getBestImageLinks(organizationImageEntity, this.HypermediaClasses.courseImage.wide);
+			var backgroundImages = this._getBestImageLinks(organizationImageEntity, Classes.courseImage.wide);
 			this._backgroundUrl = backgroundImages.highMin || backgroundImages.lowMax;
 		}.bind(this));
 	},
@@ -208,13 +209,13 @@ window.D2L.UserProfileBehaviorImpl = {
 		}
 
 		return this._fetchSirenEntity(this._rootUrl).then(function(rootEntity) {
-			var institutionUrl = (rootEntity.getLinkByRel(this.HypermediaRels.organization) || {}).href;
+			var institutionUrl = (rootEntity.getLinkByRel(Rels.organization) || {}).href;
 			return Promise.resolve(institutionUrl);
 		}.bind(this));
 	},
 	_fetchInstitution: function(institutionUrl) {
 		return this._fetchSirenEntity(institutionUrl).then(function(institutionEntity) {
-			var themeUrl = (institutionEntity.getLinkByRel(this.HypermediaRels.Themes.theme) || {}).href;
+			var themeUrl = (institutionEntity.getLinkByRel(Rels.Themes.theme) || {}).href;
 			return Promise.resolve(themeUrl);
 		}.bind(this));
 	},
@@ -236,6 +237,5 @@ window.D2L = window.D2L || {};
 */
 window.D2L.UserProfileBehavior = [
 	D2L.PolymerBehaviors.Hypermedia.OrganizationHMBehavior,
-	window.D2L.Hypermedia.HMConstantsBehavior,
 	window.D2L.UserProfileBehaviorImpl
 ];

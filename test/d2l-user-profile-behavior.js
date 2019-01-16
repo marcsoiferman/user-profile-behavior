@@ -1,9 +1,11 @@
+import SirenParse from 'siren-parser';
+
 describe('d2l-user-profile-behavior', function() {
 	var component,
 		sandbox;
 
 	function stubFetchEntity(entity) {
-		var parsed = window.D2L.Hypermedia.Siren.Parse(entity);
+		var parsed = SirenParse(entity);
 		sandbox.stub(component, '_fetchSirenEntity').returns(Promise.resolve(parsed));
 	}
 
@@ -34,7 +36,7 @@ describe('d2l-user-profile-behavior', function() {
 		});
 
 		it('should call _fetchUser when token/URL are new', function() {
-			var spy = sandbox.spy(component, '_fetchUser');
+			var spy = sandbox.stub(component, '_fetchUser').returns(Promise.resolve());
 			return component.generateUserRequest('foo', 'bar').then(function() {
 				expect(spy).to.have.been.called;
 			});
