@@ -1,35 +1,51 @@
 {
-  "name": "d2l-user-profile-behavior",
   "description": "Brightspace User Profile Behavior",
-  "private": true,
-  "scripts": {
-    "postinstall": "polymer install --variants",
-    "test": "npm run lint && npm run test:wct",
-    "lint": "npm run test:lint:js && npm run test:lint:wc",
-    "test:lint:js": "eslint --ext *.html .",
-    "test:lint:wc": "polymer lint",
-    "test:wct": "polymer test --skip-plugin sauce"
-  },
-  "homepage": "https://github.com/Brightspace/user-profile-behavior",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Brightspace/user-profile-behavior.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Brightspace/user-profile-behavior/issues"
-  },
   "keywords": [
     "d2l",
     "user",
     "profile",
     "behavior"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Brightspace/user-profile-behavior.git"
+  },
+  "homepage": "https://github.com/Brightspace/user-profile-behavior",
+  "name": "d2l-user-profile-behavior",
+  "scripts": {
+    "test": "npm run lint && npm run test:wct",
+    "lint": "npm run lint:wc && npm run lint:js",
+    "lint:js": "eslint . --ext .js,.html test/**/*.js test/**/*.html demo/**/*.js demo/**/*.html",
+    "lint:wc": "polymer lint",
+    "test:wct": "polymer test --skip-plugin sauce --npm",
+    "test:wct:local": "cross-env LAUNCHPAD_BROWSERS=chrome polymer test --skip-plugin sauce --npm -p"
+  },
+  "bugs": {
+    "url": "https://github.com/Brightspace/user-profile-behavior/issues"
+  },
   "author": "D2L Corporation",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@webcomponents/webcomponentsjs": "^2.2.3",
+    "babel-eslint": "^10.0.1",
     "eslint": "^4.15.0",
     "eslint-config-brightspace": "^0.4.0",
     "eslint-plugin-html": "^4.0.1",
-    "polymer-cli": "^1.5.7"
+    "polymer-cli": "^1.9.5",
+    "wct-browser-legacy": "^1.0.1"
+  },
+  "version": "",
+  "resolutions": {
+    "inherits": "2.0.3",
+    "samsam": "1.1.3",
+    "supports-color": "3.1.2",
+    "type-detect": "1.0.0"
+  },
+  "main": "d2l-user-profile-behavior.js",
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0",
+    "d2l-hypermedia-constants": "^6",
+    "d2l-organization-hm-behavior": "Brightspace/organization-hm-behavior#semver:^3",
+    "siren-parser": "^8.0.0"
   }
 }
