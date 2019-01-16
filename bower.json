@@ -24,6 +24,7 @@
   ],
   "dependencies": {
     "polymer": "1 - 2",
+    "d2l-fetch": "git://github.com/Brightspace/d2l-fetch.git#1.8.0",
     "d2l-hm-constants-behavior": "git://github.com/Brightspace/d2l-hm-constants-behavior.git#^5.0.0",
     "d2l-organization-hm-behavior": "git://github.com/Brightspace/organization-hm-behavior.git#^2.0.3",
 	"siren-parser-import": "Brightspace/siren-parser-import#^7.0.0"
