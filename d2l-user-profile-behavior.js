@@ -1,8 +1,8 @@
-import { D2LOrganizationHMBehaviorMixin } from './d2l-organization-hm-behavior-lit.js';
+import { D2LOrganizationHMBehaviorMixin } from './d2l-organization-hm-behavior-lit.js'; //TODO: Fix once the module is updated
 import { Classes, Rels } from 'd2l-hypermedia-constants';
 import SirenParse from 'siren-parser';
 
-export const D2LUserProfileMixin = superclass => class extends D2LOrganizationHMBehaviorMixin(superclass) {
+export const D2LUserProfileMixin = (superclass) => class extends D2LOrganizationHMBehaviorMixin(superclass) {
 
 	static get properties() {
 		return {
@@ -121,7 +121,7 @@ export const D2LUserProfileMixin = superclass => class extends D2LOrganizationHM
 		try {
 			success = await this._fetchEnrollments();
 			if (success) {
-				success = await this._fetchOrganization()
+				success = await this._fetchOrganization();
 			}
 			if (success) {
 				await this._fetchOrganizationImage();
