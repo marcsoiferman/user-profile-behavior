@@ -71,7 +71,6 @@ export const D2LUserProfileMixin = superclass => class extends D2LOrganizationHM
 	async generateUserRequest(userUrl, token, options) {
 		this._previousUserCall = this._previousUserCall || {};
 		this._doneRequests = false;
-		let done = undefined;
 
 		if (
 			userUrl &&
@@ -91,7 +90,7 @@ export const D2LUserProfileMixin = superclass => class extends D2LOrganizationHM
 			this.options = options || this.options;
 			this._previousUserCall = { userUrl: this.userUrl, token: this.token };
 
-			done = await this._getBackgroundFromUsersLatestFolioEvidence();
+			let done = await this._getBackgroundFromUsersLatestFolioEvidence();
 			if (!done) {
 				done = await this._getBackgroundFromUsersFirstCourse();
 			}
@@ -100,19 +99,55 @@ export const D2LUserProfileMixin = superclass => class extends D2LOrganizationHM
 			}
 		}
 
-		return done;
+		return undefined;
 	}
 
 	async _getBackgroundFromUsersLatestFolioEvidence() {
-		return await this._fetchUser() && await this._fetchFolio();
+		let success = undefined;
+		try {
+			success = await this._fetchUser();
+			if (success) {
+				success = await this._fetchFolio();
+			}
+		}
+		catch (error) {
+			success = undefined;
+		}
+		return success;
 	}
 
 	async _getBackgroundFromUsersFirstCourse() {
-		return await this._fetchEnrollments() && await this._fetchOrganization() && await this._fetchOrganizationImage();
+		let success = undefined;
+		try {
+			success = await this._fetchEnrollments();
+			if (success) {
+				success = await this._fetchOrganization()
+			}
+			if (success) {
+				await this._fetchOrganizationImage();
+			}
+		}
+		catch (error) {
+			success = undefined;
+		}
+		return success;
 	}
 
 	async _getInstitutionThemeBackground() {
-		return await this._fetchRoot() && await this._fetchInstitution() && await this._fetchTheme();
+		let success = undefined;
+		try {
+			success = await this._fetchRoot();
+			if (success) {
+				success = await this._fetchInstitution();
+			}
+			if (success) {
+				success = await this._fetchTheme();
+			}
+		}
+		catch (error) {
+			success = undefined;
+		}
+		return success;
 	}
 
 	async _fetchSirenEntity(url) {
