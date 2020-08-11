@@ -92,7 +92,7 @@ export const D2LUserProfileMixin = (superclass) => class extends D2LOrganization
 			this._previousUserCall = { userUrl: this.userUrl, token: this.token };
 
 			const userSuccess = await this._fetchUser();
-			if (userSuccess || !userSuccess) {
+			if (userSuccess) {
 				res = await this._getBackgroundFromUsersLatestFolioEvidence() || await this._getBackgroundFromUsersFirstCourse() || await this._getInstitutionThemeBackground();
 			}
 		}
