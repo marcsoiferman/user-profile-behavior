@@ -56,7 +56,7 @@ describe('d2l-user-profile-behavior', function() {
 			});
 
 			it('should call enrollments -> organization -> organizationImage if folio flow fails', function() {
-				sandbox.stub(component, '_fetchFolio').returns(Promise.resolve(undefined));
+				sandbox.stub(component, '_fetchFolio').returns(Promise.resolve(false));
 				var enrollmentsStub = sandbox.stub(component, '_fetchEnrollments').returns(Promise.resolve(true));
 				var organizationStub = sandbox.stub(component, '_fetchOrganization').returns(Promise.resolve(true));
 				var organizationImageStub = sandbox.stub(component, '_fetchOrganizationImage').returns(Promise.resolve(true));
@@ -69,8 +69,8 @@ describe('d2l-user-profile-behavior', function() {
 			});
 
 			it('should call root -> institution -> theme if organizationImage flow fails', function() {
-				sandbox.stub(component, '_fetchFolio').returns(Promise.resolve(undefined));
-				sandbox.stub(component, '_fetchEnrollments').returns(Promise.resolve(undefined));
+				sandbox.stub(component, '_fetchFolio').returns(Promise.resolve(false));
+				sandbox.stub(component, '_fetchEnrollments').returns(Promise.resolve(false));
 				var rootStub = sandbox.stub(component, '_fetchRoot').returns(Promise.resolve(true));
 				var institutionStub = sandbox.stub(component, '_fetchInstitution').returns(Promise.resolve(true));
 				var themeStub = sandbox.stub(component, '_fetchTheme').returns(Promise.resolve(true));
@@ -83,9 +83,9 @@ describe('d2l-user-profile-behavior', function() {
 			});
 
 			it('should set the background to "initial" if everything fails', function() {
-				sandbox.stub(component, '_fetchFolio').returns(Promise.reject());
-				sandbox.stub(component, '_fetchEnrollments').returns(Promise.reject());
-				sandbox.stub(component, '_fetchRoot').returns(Promise.reject());
+				sandbox.stub(component, '_fetchFolio').returns(Promise.reject(false));
+				sandbox.stub(component, '_fetchEnrollments').returns(Promise.reject(false));
+				sandbox.stub(component, '_fetchRoot').returns(Promise.reject(false));
 
 				expect(component._backgroundColor).to.equal(undefined);
 				component.generateUserRequest('foo', 'bar').then(function() {
@@ -187,7 +187,7 @@ describe('d2l-user-profile-behavior', function() {
 		it('should reject if the folio URL has not been set', function() {
 			component._folioUrl = undefined;
 			return component._fetchFolio().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 				// expect(e.message).to.equal('Folio URL not set');
 			});
 		});
@@ -196,7 +196,7 @@ describe('d2l-user-profile-behavior', function() {
 			stubFetchEntity(createFolioEvidence('Text'));
 
 			return component._fetchFolio().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 				expect(component._backgroundUrl).to.not.equal('foo');
 			});
 		});
@@ -236,7 +236,7 @@ describe('d2l-user-profile-behavior', function() {
 			component._enrollmentsUrl = undefined;
 
 			return component._fetchEnrollments().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 				expect(spy).to.have.not.been.called;
 			});
 		});
@@ -244,7 +244,7 @@ describe('d2l-user-profile-behavior', function() {
 		it('should reject if user has no enrollments', function() {
 			stubFetchEntity({});
 			return component._fetchEnrollments().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 			});
 		});
 
@@ -258,7 +258,7 @@ describe('d2l-user-profile-behavior', function() {
 			});
 
 			return component._fetchEnrollments().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 			});
 		});
 
@@ -290,7 +290,7 @@ describe('d2l-user-profile-behavior', function() {
 			});
 
 			return component._fetchOrganization().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 			});
 		});
 
@@ -335,7 +335,7 @@ describe('d2l-user-profile-behavior', function() {
 			component._rootUrl = undefined;
 
 			return component._fetchRoot().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 				expect(spy).to.have.not.been.called;
 			});
 		});
@@ -374,7 +374,7 @@ describe('d2l-user-profile-behavior', function() {
 			stubFetchEntity({});
 
 			return component._fetchTheme().then(function(res) {
-				expect(res).to.equal(undefined);
+				expect(res).to.equal(false);
 			});
 		});
 
